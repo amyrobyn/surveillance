@@ -1,12 +1,13 @@
-#https://vimeo.com/140669369
-
 install.packages("surveillance")
 library(surveillance)
 help(surveillance)
 
-##example dataset
+##example dataset following prof's code from https://vimeo.com/140669369
 data("salmNewport")
 salmNewport
+dim(salmNewport)
+
+
 
 
 #import numeric data- counts of dengue
@@ -17,8 +18,6 @@ ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequenc
 
 #try to plot data but margins too big
 plot(counts_numeric)
-
-
 
 
 #import counts of dengue data
