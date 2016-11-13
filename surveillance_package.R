@@ -16,7 +16,6 @@ install.packages("spatstat")
 install.packages("gstat") 
 install.packages("spdep")
 install.packages("rgdal")
-
 require("ISOweek")
 
 ##example dataset following prof's code from https://vimeo.com/140669369
@@ -48,24 +47,52 @@ population(abattoir)
 
 
 ##################################################
+#create spatialpolygon from barrios shapefile
+crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+barrios=readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
+class(barrios)
+str(barrios@data)
+barrios$ID_BARRIO<- as.numeric(as.character(barrios$ID_BARRIO))
+plot(barrios)
+barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
+#sucess!
+
 #import numeric data- counts of dengue
 counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
+colnames(counts_numeric) <- c("ID_BARRIO") 
 head(counts_numeric, n=1)
-counts_numericsts<-sts(epoch=as.numeric(counts_numeric[,29]),observed=matrix(counts_numeric[,6]),epochAsDate=TRUE)
+counts_numericsts<-sts(epoch=as.numeric(counts_numeric[,29]),observed=matrix(counts_numeric[,6]),epochAsDate=TRUE, freq =12, start=c(2014, 10), map = barrios)
 class(counts_numericsts)
+plot(counts_numericsts, type=observed~time)
+#sucess!
 
-plot(counts_numericsts)
+
 
 
 setclass("sts", representation(epoch= as.numeric("date"),
-					freq ="12",
-					start ="numeric",
+					freq =12,
+					start =numeric,
 					observed = "matrix",
 					state ="matrix",
 					map ="SpatialPolygonDataFrame",
 					epochAsDate ="TRUE",
 					))
 
+
+
+
+
+
+
+dim(counts_numericsts)
+
+dim(aggregate(counts_numericsts, by="unit"))
+dim(aggregate(counts_numericsts, by="time"))
+head(observed(counts_numericsts), n=1)
+
+#plot the data by time and by region
+plot(counts_numericsts, type=observed~time)
+plot(counts_numericsts[,1:8], type=observed~time|unit)
 
 
 fix(counts_numeric)
@@ -81,14 +108,6 @@ total_pop_v <- as.data.frame(t(total_pop))
 dengue_v <- as.data.frame(t(dengue))
 ts<-ts(counts_numeric$dengue$total_pop_v, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6177)
 fix(ts2)
-
-#create spatialpolygon from barrios shapefile
-crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-barrios=readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
-class(barrios)
-str(barrios@data)
-plot(barrios)
-barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
 
 
 
