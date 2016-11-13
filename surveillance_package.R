@@ -4,31 +4,31 @@ install.packages("surveillance")
 library(surveillance)
 help(surveillance)
 
+##example dataset
+data("salmNewport")
+salmNewport
 
+#import counts of dengue data
 ts<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv", fileEncoding="UCS-2LE",sep=",")
 head(ts,n=2)
-
 require(ISOweek)
 
+#attach data
 attach(counts_long)	
 
+#set data as time series?
 ts<- as.ts(counts_long)
 
-fix(counts_long)
+#view data in editor
+#fix(counts_long)
+
+#summarize data
 summary(counts_long)
 format(date, format=" %m %d  %y")
 dates <- as.Date(fecha_s, "%m/%d/%y")
-
 sts<-sts(epoch=as.numeric(ts[,1], observed=matrix(ts[,2], epochAsDate=TRUE)
 
-
-family[, 1] <-as.numeric(as.character( family[, 1] ))
-family[, 3] <- as.numeric(as.character( family[, 3] ))
 sts<-linelist2sts(counts_long, dateCol="date", aggregate.by="1 month")
-
-
-data("salmNewport")
-salmNewport
 
 
 
