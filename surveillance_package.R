@@ -3,14 +3,21 @@ setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcg
 install.packages("surveillance")
 library(surveillance)
 help(surveillance)
+help(sp)
 
-install.packages("spdep")
 install.packages("sp")
-install.packages("rgdal")
+install.packages("ggplot2")  
+install.packages("rgdal") 
 install.packages("rgeos") 
-require(rgdal)
-require("ISOweek")
+install.packages("tmap") 
+install.packages("ggmap") 
+install.packages("leaflet") 
+install.packages("spatstat") 
+install.packages("gstat") 
+install.packages("spdep")
+install.packages("rgdal")
 
+require("ISOweek")
 
 ##example dataset following prof's code from https://vimeo.com/140669369
 data("salmNewport")
@@ -20,7 +27,7 @@ ts[,1]<-ISOweek2date(toupper(paste0(ts[,1],"-1")))
 sNewportAll<-sts(epoch=as.numeric(ts[,1],observed=matrix(ts[,2]),epochAsDate=True)
 class(sNewportAll)
 
-#view the data by spact and time
+#view the data by space and time
 dim(salmNewport)
 dim(aggregate(salmNewport, by="unit"))
 dim(aggregate(salmNewport, by="time"))
@@ -30,15 +37,8 @@ head(observed(salmNewport), n=1)
 plot(salmNewport, type=observed~time)
 plot(salmNewport[,1:8], type=observed~time|unit)
 
-##didn't work
-#outbreak detection algorithm (quasi poisson with overdispersion with time trend and simple intercept)
-#derivation of glm with a threshold for "outbreak"
-phase2<-which(epoch(salmNewport) %int% seq(start, length.out=5,by"1 week"))
-cntrlFar<-list(range=phase2,w=2, b=3, alpha=0.001)
-s.far<-farrington(salmNewport, control=cntrlFar)
 
-
-###
+######################################
 vignette(package = "surveillance")
 demo(package = "surveillance")
 
@@ -47,9 +47,30 @@ plot(abattoir)
 population(abattoir)
 
 
-
+##################################################
 #import numeric data- counts of dengue
 counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
+head(counts_numeric, n=1)
+counts_numericsts<-sts(epoch=as.numeric(counts_numeric[,29]),observed=matrix(counts_numeric[,6]),epochAsDate=TRUE)
+class(counts_numericsts)
+
+plot(counts_numericsts)
+
+
+setclass("sts", representation(epoch= as.numeric("date"),
+					freq ="12",
+					start ="numeric",
+					observed = "matrix",
+					state ="matrix",
+					map ="SpatialPolygonDataFrame",
+					epochAsDate ="TRUE",
+					))
+
+
+
+fix(counts_numeric)
+sNewportAll<-sts(epoch=as.numeric(ts[,29],observed=matrix(ts[,6]),epochAsDate=True)
+dim(sNewportAll) 
 
 total_pop<- counts_numeric$total_pop
 
@@ -79,10 +100,7 @@ exists("total_pop")
 
 # Read SHAPEFILE.shp from the current working directory (".")
 shape <- readOGR(dsn = ".", layer = "barrios")
-
-
 as.SpatialPolygons.PolygonsList(Srl, proj4string=CRS(as.character(NA))
-
 
 library(maptools)
 barrios.shp <- read.shape(system.file("shapes/sids.shp", package="maptools")[1])
@@ -136,22 +154,6 @@ if (require("maptools")) {
   
   plot(ha.sts, type=observed ~ 1 | unit)
 
-
-
-
-if (requireNamespace("maptools")) {
-    # load disProg-object "ha" and convert to S4-class "sts"
-    data("ha")
-    shpfile <- system.file("shapes/berlin.shp",package="surveillance")
-    ha.sts <- disProg2sts(ha, map=maptools::readShapePoly(shpfile,IDvar="SNAME"))
-} else {
-    data("ha.sts")
-    # is almost identical to the above except that German umlauts
-    # have been replaced in 'ha.sts@map@data$BEZIRK' for compatibility reasons
-}
-
-ha.sts
-plot(ha.sts, type = observed ~ 1 | unit)
 
 ## convert ts/mts object to sts
 z <- ts(matrix(rpois(300,10), 100, 3), start = c(1961, 1), frequency = 12)
