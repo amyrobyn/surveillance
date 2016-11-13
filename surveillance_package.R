@@ -24,13 +24,31 @@ ts<- as.ts(counts_long)
 
 #summarize data
 summary(counts_long)
+
+#format dates into mdy
 format(date, format=" %m %d  %y")
 dates <- as.Date(fecha_s, "%m/%d/%y")
+
+#set data as spatial time series??
 sts<-sts(epoch=as.numeric(ts[,1], observed=matrix(ts[,2], epochAsDate=TRUE)
 
+#try to set data to spatial time series by aggregation??
 sts<-linelist2sts(counts_long, dateCol="date", aggregate.by="1 month")
 
+#import numeric data- counts of dengue
+counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
 
+#succesfully import the data as ts data
+ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6176)
+#try to plot data but margins too big
+plot(counts_numeric)
+
+
+
+
+
+
+#############example code###############
 
 if (require("maptools")) {
     # load disProg-object "counts_long" and convert to S4-class "sts"
@@ -47,19 +65,6 @@ if (require("maptools")) {
   plot(ha.sts, type=observed ~ 1 | unit)
 
 
-counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
-
-ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6176)
-
-fix(ts2)
-plot(counts_numeric)
-
-
-
-
-
-
-#############example code###############
 
 
 if (requireNamespace("maptools")) {
