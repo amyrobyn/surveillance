@@ -4,11 +4,18 @@ install.packages("surveillance")
 library(surveillance)
 help(surveillance)
 
+install.packages("spdep")
+install.packages("sp")
+install.packages("rgdal")
+install.packages("rgeos") 
+require(rgdal)
+require("ISOweek")
+
+
 ##example dataset following prof's code from https://vimeo.com/140669369
 data("salmNewport")
 salmNewport
 
-require("ISOweek")
 ts[,1]<-ISOweek2date(toupper(paste0(ts[,1],"-1")))
 sNewportAll<-sts(epoch=as.numeric(ts[,1],observed=matrix(ts[,2]),epochAsDate=True)
 class(sNewportAll)
@@ -44,35 +51,30 @@ population(abattoir)
 #import numeric data- counts of dengue
 counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
 
+total_pop<- counts_numeric$total_pop
+
+dengue<- counts_numeric$dengue
+
 #succesfully import the data as ts data
-ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6177)
+total_pop_v <- as.data.frame(t(total_pop))
+dengue_v <- as.data.frame(t(dengue))
+ts<-ts(counts_numeric$dengue$total_pop_v, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6177)
 fix(ts2)
-#try to plot data but margins too big
- par(mar)
- par(“mai”)
 
-par(“mai”)/par(“mar”)
-
-plot(1:10,ann=FALSE,type=”n”,xaxt=”n”,yaxt=”n”) for(j in 1:4) for(i in 0:10) mtext(as.character(i),side=j,line=i)
-par(mar=c(1,1,1,1))
-plot(counts_numeric)
-
-
-install.packages("spdep")
-install.packages("sp")
-install.packages("rgdal")
-install.packages("rgeos") 
-require(rgdal)
+#create spatialpolygon from barrios shapefile
 crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-
-
 barrios=readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
 class(barrios)
 str(barrios@data)
 plot(barrios)
-
 barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
 
+
+
+#create spatial temporal data set
+countsdata <- sts(observed=dengue, start = c(2014, 10), frequency = 12, neighbourhood = barrios_order, map = barrios, population = total_pop)
+
+exists("total_pop")
 
 
 # Read SHAPEFILE.shp from the current working directory (".")
@@ -84,7 +86,6 @@ as.SpatialPolygons.PolygonsList(Srl, proj4string=CRS(as.character(NA))
 
 library(maptools)
 barrios.shp <- read.shape(system.file("shapes/sids.shp", package="maptools")[1])
-
 
 
 #import counts of dengue data
