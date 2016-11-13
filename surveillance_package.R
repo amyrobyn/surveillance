@@ -1,3 +1,5 @@
+setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance")
+
 install.packages("surveillance")
 library(surveillance)
 help(surveillance)
@@ -5,8 +7,37 @@ help(surveillance)
 ##example dataset following prof's code from https://vimeo.com/140669369
 data("salmNewport")
 salmNewport
-dim(salmNewport)
 
+require("ISOweek")
+ts[,1]<-ISOweek2date(toupper(paste0(ts[,1],"-1")))
+sNewportAll<-sts(epoch=as.numeric(ts[,1],observed=matrix(ts[,2]),epochAsDate=True)
+class(sNewportAll)
+
+#view the data by spact and time
+dim(salmNewport)
+dim(aggregate(salmNewport, by="unit"))
+dim(aggregate(salmNewport, by="time"))
+head(observed(salmNewport), n=1)
+
+#plot the data by time and by region
+plot(salmNewport, type=observed~time)
+plot(salmNewport[,1:8], type=observed~time|unit)
+
+##didn't work
+#outbreak detection algorithm (quasi poisson with overdispersion with time trend and simple intercept)
+#derivation of glm with a threshold for "outbreak"
+phase2<-which(epoch(salmNewport) %int% seq(start, length.out=5,by"1 week"))
+cntrlFar<-list(range=phase2,w=2, b=3, alpha=0.001)
+s.far<-farrington(salmNewport, control=cntrlFar)
+
+
+###
+vignette(package = "surveillance")
+demo(package = "surveillance")
+
+data(abattoir)
+plot(abattoir)
+population(abattoir)
 
 
 
@@ -14,10 +45,46 @@ dim(salmNewport)
 counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
 
 #succesfully import the data as ts data
-ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6176)
-
+ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6177)
+fix(ts2)
 #try to plot data but margins too big
+ par(mar)
+ par(“mai”)
+
+par(“mai”)/par(“mar”)
+
+plot(1:10,ann=FALSE,type=”n”,xaxt=”n”,yaxt=”n”) for(j in 1:4) for(i in 0:10) mtext(as.character(i),side=j,line=i)
+par(mar=c(1,1,1,1))
 plot(counts_numeric)
+
+
+install.packages("spdep")
+install.packages("sp")
+install.packages("rgdal")
+install.packages("rgeos") 
+require(rgdal)
+crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+
+
+barrios=readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
+class(barrios)
+str(barrios@data)
+plot(barrios)
+
+barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
+
+
+
+# Read SHAPEFILE.shp from the current working directory (".")
+shape <- readOGR(dsn = ".", layer = "barrios")
+
+
+as.SpatialPolygons.PolygonsList(Srl, proj4string=CRS(as.character(NA))
+
+
+library(maptools)
+barrios.shp <- read.shape(system.file("shapes/sids.shp", package="maptools")[1])
+
 
 
 #import counts of dengue data
