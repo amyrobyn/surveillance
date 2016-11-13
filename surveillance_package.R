@@ -8,6 +8,19 @@ help(surveillance)
 data("salmNewport")
 salmNewport
 
+
+#import numeric data- counts of dengue
+counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
+
+#succesfully import the data as ts data
+ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6176)
+
+#try to plot data but margins too big
+plot(counts_numeric)
+
+
+
+
 #import counts of dengue data
 ts<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv", fileEncoding="UCS-2LE",sep=",")
 head(ts,n=2)
@@ -34,14 +47,6 @@ sts<-sts(epoch=as.numeric(ts[,1], observed=matrix(ts[,2], epochAsDate=TRUE)
 
 #try to set data to spatial time series by aggregation??
 sts<-linelist2sts(counts_long, dateCol="date", aggregate.by="1 month")
-
-#import numeric data- counts of dengue
-counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
-
-#succesfully import the data as ts data
-ts2<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6176)
-#try to plot data but margins too big
-plot(counts_numeric)
 
 
 
