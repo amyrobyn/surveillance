@@ -1,6 +1,13 @@
 ##################amy krystosik, surveillance package, 11/13/16##################
 
 setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance")
+
+pkg = c("sp", "xts", "zoo", "spacetime", "trajectories",
+"maptools", "maps", "mapview", "leaflet", "rglwidget",
+"rgl", "RColorBrewer", "ggmap", "ggplot2", "dplyr",
+"rmarkdown", "units")
+install.packages(pkg)
+
 install.packages("surveillance")
 library(surveillance)
 help(surveillance)
@@ -23,6 +30,7 @@ library("rgdal")
 library(xts)
 install.packages("maptools")
 library(maptools)
+
 ###################################################create spatialpolygon from barrios shapefile###################################################
 crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 barrios<-readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
@@ -50,50 +58,15 @@ counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertat
 counts_numeric$idx<-as.Date(counts_numeric$date_formated)
 ts(counts_numeric[2:52], start = c(2014, 10), frequency = 12)
 structure(counts_numeric)
-
-
-counts_numeric$codigo_barrio<- as.numeric(as.character(counts_numeric$codigo_barrio))
-counts_numeric$dengue<- as.numeric(as.character(counts_numeric$dengue))
-counts_numeric$date_numeric<- as.numeric(as.character(counts_numeric$date_numeric))
-str(counts_numeric)
-
-
-denguex<- xts(counts_numeric$dengue, order.by = idx)
-codigo_barriox<- xts(counts_numeric$codigo_barrio, order.by = idx)
-
-xts(cbind(denguex,codigo_barriox),idx)
-
-ts_dengue<-ts(denguex, start=c(2014, 10), end=c(2016, 4), frequency=12)
-structure(ts_dengue)
-ts_barrio<-ts(codigo_barriox, start=c(2014, 10), end=c(2016, 4), frequency=12)
-structure(ts_barrio)
-ts_idx<-ts(idx, start=c(2014, 10), end=c(2016, 4), frequency=12)
-structure(ts_idx)
-ts_barriosorderx<-ts(barrios_orderx, start=c(2014, 10), end=c(2016, 4), frequency=12)
-structure(ts_barrios_orderx)
-
-plot(ts_dengue)
-dim(ts_dengue)
-dim(aggregate(ts_dengue, by="codigo_barriox"))
-dim(aggregate(counts_numericsts, by="idx"))
-head(ts_dengue, n=4)
-
-#colnames(ts) <- c("ID_BARRIO") 
-counts_numericsts<-sts(epoch=as.numeric(ts_idx),observed=matrix(ts_dengue),epochAsDate=TRUE, freq =12, start=c(2014, 10), map = barrios)
-
-
-#, map=barrios, neighbourhood = barrios_order
+counts_numericsts<-sts(epoch=as.numeric(counts_numeric$idx),observed=matrix(counts_numeric$dengue),epochAsDate=TRUE, freq =12, start=c(2014, 10), map=barrios, neighbourhood = barrios_order)
 str(counts_numericsts)
 class(counts_numericsts)
 plot(counts_numericsts, type=observed~time)
 #sucess!
 
-
-
-
 #plot the data by time and by region
 plot(counts_numericsts, type=observed~time)
-plot(counts_numericsts[,1:8], type=observed~time|codigo_barrio)
+plot(counts_numericsts[,1:8], type=observed~time|counts_numericsts$codigo_barrio)
 fix(counts_numeric)
 
 
