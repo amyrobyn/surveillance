@@ -68,29 +68,7 @@ plot(counts_sts_fit_basic, type = "fitted", units = districts2plot, hide0s = TRU
 
 #multivariate modoel
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
-#time and spacy varying
 Sprop<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
-rain<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
-rainlag1<-counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag1)
-
-#time varying
-temp<-counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c)
-templag1<-counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1)
-
-#fixed
-services<-counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index)
-educ<-counts_numeric2 %>% select(c(54,2,34)) %>% spread(key=ID,value=assist_educ_P)
-afro<-counts_numeric2 %>% select(c(54,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop)
-area<-counts_numeric2 %>% select(c(54,2,6)) %>% spread(key=ID,value=arean3210)
-limit<-counts_numeric2 %>% select(c(54,2,12)) %>% spread(key=ID,value=alguna_limit_p)
-pop<-counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop)
-literate<-counts_numeric2 %>% select(c(54,2,13)) %>% spread(key=ID,value=literate_p)
-empty<-counts_numeric2 %>% select(c(54,2,18)) %>% spread(key=ID,value=home_empty_p)
-single<-counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p)
-male<-counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p)
-unemployed<-counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p)
-home<-counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p)
-
 
 Soptions <- c("unchanged", "Soffset", "Scover")
 SmodelGrid <- expand.grid(end=Soptions, ar = Soptions)
@@ -106,3 +84,30 @@ update(counts_sts_fit_basic,
        ar = updatecomp(counts_sts_fit_basic$control$ar, options[2]),
        data = list(Sprop = Sprop))
   })
+
+#error happens here#
+
+
+#other covariates I want to import
+#time and spacy varying
+rain<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
+rainlag1<-counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag1)
+
+#time varying
+temp<-counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c)
+templag1<-counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1)
+
+#fixed
+services<-counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index)
+educ<-counts_numeric2 %>% select(c(54,2,11)) %>% spread(key=ID,value=assist_educ_P)
+afro<-counts_numeric2 %>% select(c(54,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop)
+area<-counts_numeric2 %>% select(c(54,2,6)) %>% spread(key=ID,value=arean3210)
+limit<-counts_numeric2 %>% select(c(54,2,12)) %>% spread(key=ID,value=alguna_limit_p)
+pop<-counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop)
+literate<-counts_numeric2 %>% select(c(54,2,13)) %>% spread(key=ID,value=literate_p)
+empty<-counts_numeric2 %>% select(c(54,2,18)) %>% spread(key=ID,value=home_empty_p)
+single<-counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p)
+male<-counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p)
+unemployed<-counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p)
+home<-counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p)
+
