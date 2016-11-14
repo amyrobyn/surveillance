@@ -1,12 +1,7 @@
-
-#eg.
-data("measles.weser")
-measles <- disProg2sts(measles.weser)
-
 setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance")
 
 #install.packages("animation")
-#install.packages("surveillance")
+install.packages("surveillance")
 #install.packages("gridExtra")
 library(xts)
 library(maptools)
@@ -64,7 +59,7 @@ dev.off()
 counts_sts_basicmodel<-list(end = list(f=addSeason2formula(~1+t, period = counts_sts@freq)), ar = list(f=~1), ne =list(f=~1, weights = neighbourhood(counts_sts)==1), family = "NegBin1") 
 counts_sts_fit_basic<-hhh4(stsObj= counts_sts, control =counts_sts_basicmodel)
 summary(counts_sts_basicmodel, idx2Exp = TRUE, amplitudeShift = TRUE, maxEV=+TRUE)
-hhh4(stsObj= counts_numericsts, control = counts_sts_basicmodel)
+hhh4(stsObj= counts_sts, control = counts_sts_basicmodel)
 plot(counts_sts_fit_basic, type = "season", components = "end", main = "")
 confint(counts_sts_fit_basic, parm = "overdisp")
 AIC(counts_sts_fit_basic, update(counts_sts_fit_basic, family = "Poisson"))
@@ -73,31 +68,41 @@ plot(counts_sts_fit_basic, type = "fitted", units = districts2plot, hide0s = TRU
 
 #multivariate modoel
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
+#time and spacy varying
+Sprop<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
+rain<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
+rainlag1<-counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag1)
+
 #time varying
-rain<--matrix(as.numeric(counts_numeric2$services_index),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-temp<--matrix(as.numeric(counts_numeric2$services_index),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
+temp<-counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c)
+templag1<-counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1)
+
 #fixed
-services<--matrix(as.numeric(counts_numeric2$services_index),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-educ<--matrix(as.numeric(counts_numeric2$assist_educ_P),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-afro<--matrix(as.numeric(counts_numeric2$negro__a___mulato__afrop),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-area<--matrix(as.numeric(counts_numeric2$arean3210),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-estrato<--matrix(as.numeric(counts_numeric2$estrato_mon3210),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-limit<--matrix(as.numeric(counts_numeric2$alguna_limit_p),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-pop<--matrix(as.numeric(counts_numeric2$total_pop),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-literate<--matrix(as.numeric(counts_numeric2$literate_p),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-empty<--matrix(as.numeric(counts_numeric2$home_empty_p),  nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-single<--matrix(as.numeric(counts_numeric2$single_p), nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-male<--matrix(as.numeric(counts_numeric2$male_p), nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-unemployed<--matrix(as.numeric(counts_numeric2$unem_p), nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
-home<--matrix(as.numeric(counts_numeric2$home_p), nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
+services<-counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index)
+educ<-counts_numeric2 %>% select(c(54,2,34)) %>% spread(key=ID,value=assist_educ_P)
+afro<-counts_numeric2 %>% select(c(54,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop)
+area<-counts_numeric2 %>% select(c(54,2,6)) %>% spread(key=ID,value=arean3210)
+limit<-counts_numeric2 %>% select(c(54,2,12)) %>% spread(key=ID,value=alguna_limit_p)
+pop<-counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop)
+literate<-counts_numeric2 %>% select(c(54,2,13)) %>% spread(key=ID,value=literate_p)
+empty<-counts_numeric2 %>% select(c(54,2,18)) %>% spread(key=ID,value=home_empty_p)
+single<-counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p)
+male<-counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p)
+unemployed<-counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p)
+home<-counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p)
+
+
+Soptions <- c("unchanged", "Soffset", "Scover")
+SmodelGrid <- expand.grid(end=Soptions, ar = Soptions)
+row.names(SmodelGrid) <- do.call("paste", c(SmodelGrid, list(sep ="|")))
 
 counts_sts_multivariate <-apply(X=SmodelGrid, MARGIN = 1, FUN=function(options){ 
   updatecomp <-function(comp, option) switch(option, 
   "unchanged" = list(),
-  "Soffset"=list(offset = comp$offset * pop), 
-"Scovar"=list(f=update(comp$f,~.+log(pop))))
+  "Soffset"=list(offset = comp$offset * Sprop), 
+"Scovar"=list(f=update(comp$f,~.+log(Sprop))))
 update(counts_sts_fit_basic, 
        end = updatecomp(counts_sts_fit_basic$control$end, options[1]),
        ar = updatecomp(counts_sts_fit_basic$control$ar, options[2]),
-       data = list(pop = pop))
+       data = list(Sprop = Sprop))
   })
