@@ -33,7 +33,7 @@ library(maptools)
 
 ###################################################create spatialpolygon from barrios shapefile###################################################
 crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-barrios<-readShapePoly("barrios.shp",proj4string=crswgs84,verbose=TRUE)
+barrios<-readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
 class(barrios)
 barrios$ID_BARRIO<- as.numeric(as.character(barrios$ID_BARRIO))
 str(barrios@data)
