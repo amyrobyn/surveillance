@@ -1,4 +1,5 @@
 ##################amy krystosik, surveillance package, 11/13/16##################
+#video example of importing date: https://vimeo.com/140669369
 
 setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance")
 
@@ -60,6 +61,12 @@ ts(counts_numeric[2:52], start = c(2014, 10), frequency = 12)
 structure(counts_numeric)
 counts_numericsts<-sts(epoch=as.numeric(counts_numeric$idx),observed=matrix(counts_numeric$dengue),epochAsDate=TRUE, freq =12, start=c(2014, 10), map=barrios, neighbourhood = barrios_order)
 ####el errror sale aqui!###
+
+
+
+
+
+
 
 
 
