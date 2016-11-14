@@ -91,4 +91,13 @@ male<--matrix(as.numeric(counts_numeric2$male_p), nrow=nrow(counts_numeric2), nc
 unemployed<--matrix(as.numeric(counts_numeric2$unem_p), nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
 home<--matrix(as.numeric(counts_numeric2$home_p), nrow=nrow(counts_numeric2), ncol(counts_numeric2), byrow =TRUE)
 
-counts_sts_multivariate <-
+counts_sts_multivariate <-apply(X=SmodelGrid, MARGIN = 1, FUN=function(options){ 
+  updatecomp <-function(comp, option) switch(option, 
+  "unchanged" = list(),
+  "Soffset"=list(offset = comp$offset * pop), 
+"Scovar"=list(f=update(comp$f,~.+log(pop))))
+update(counts_sts_fit_basic, 
+       end = updatecomp(counts_sts_fit_basic$control$end, options[1]),
+       ar = updatecomp(counts_sts_fit_basic$control$ar, options[2]),
+       data = list(pop = pop))
+  })
