@@ -49,40 +49,46 @@ population(abattoir)
 ##################################################
 #create spatialpolygon from barrios shapefile
 crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-barrios=readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
+barrios<-readShapePoly("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp",proj4string=crswgs84,verbose=TRUE)
+
 class(barrios)
-str(barrios@data)
 barrios$ID_BARRIO<- as.numeric(as.character(barrios$ID_BARRIO))
+str(barrios@data)
 plot(barrios)
 barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
 #sucess!
 
+#put sptialpolygon into dataframe: 
+
+library("rgdal")
+polygons <- readOGR('C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/barrios.shp', layer = 'barrios')
+class(polygons)
+
+poly_df <- as.data.frame(polygons)
+# do some staff with "poly_df" that doesn't support SpatialPolygonsDataFrame
+# then convert it to SPDF back again
+s_poly <- SpatialPolygonsDataFrame(polygons, poly_df)
+# add new column to SPDF:
+s_poly$new_column <- "codigo_barrio" 
+polygons <- SpatialPolygonsDataFrame(polygons, counts_numeric)
+
 #import numeric data- counts of dengue
-counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts_numeric.csv")
-colnames(counts_numeric) <- c("ID_BARRIO") 
+counts_numeric<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts.csv")
+counts_numeric$codigo_barrio<- as.numeric(as.character(counts_numeric$codigo_barrio))
+
+ts<-ts(counts_numeric$dengue, start=c(2014, 10, 1), end=c(2016, 4, 1), frequency=6177, frequency=12)
+structure(ts)
+plot(dengue)
+dim(aggregate(counts_numericsts, by="codigo_barrio"))
+dim(aggregate(counts_numericsts, by="date"))
+
 head(counts_numeric, n=1)
-counts_numericsts<-sts(epoch=as.numeric(counts_numeric[,29]),observed=matrix(counts_numeric[,6]),epochAsDate=TRUE, freq =12, start=c(2014, 10), map = barrios)
+#colnames(counts_numeric) <- c("ID_BARRIO") 
+counts_numericsts<-sts(epoch=as.numeric(counts_numeric[,3]),observed=matrix(counts_numeric[,2]),epochAsDate=TRUE, freq =12, start=c(2014, 10), state =matrix(counts_numeric[,1]))
+str(counts_numericsts)
 class(counts_numericsts)
 plot(counts_numericsts, type=observed~time)
 #sucess!
-
-
-
-
-setclass("sts", representation(epoch= as.numeric("date"),
-					freq =12,
-					start =numeric,
-					observed = "matrix",
-					state ="matrix",
-					map ="SpatialPolygonDataFrame",
-					epochAsDate ="TRUE",
-					))
-
-
-
-
-
-
 
 dim(counts_numericsts)
 
@@ -92,7 +98,7 @@ head(observed(counts_numericsts), n=1)
 
 #plot the data by time and by region
 plot(counts_numericsts, type=observed~time)
-plot(counts_numericsts[,1:8], type=observed~time|unit)
+plot(counts_numericsts[,1:8], type=observed~time|codigo_barrio)
 
 
 fix(counts_numeric)
