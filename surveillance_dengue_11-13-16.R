@@ -1,3 +1,5 @@
+data(measlesWeserEms)
+
 setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance")
 
 #install.packages("animation")
@@ -68,7 +70,8 @@ plot(counts_sts_fit_basic, type = "fitted", units = districts2plot, hide0s = TRU
 
 #multivariate modoel
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
-Sprop<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
+#Sprop<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
+Sprop<-as.matrix(counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
 
 Soptions <- c("unchanged", "Soffset", "Scover")
 SmodelGrid <- expand.grid(end=Soptions, ar = Soptions)
@@ -85,6 +88,7 @@ update(counts_sts_fit_basic,
        data = list(Sprop = Sprop))
   })
 
+aics<-do.call(AIC, lapply(names(counts_sts_multivariate), as.name), envir = as.environment(counts_sts_multivariate))
 #error happens here#
 
 
@@ -97,6 +101,7 @@ rainlag1<-counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag
 temp<-counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c)
 templag1<-counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1)
 
+str(Sprop)
 #fixed
 services<-counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index)
 educ<-counts_numeric2 %>% select(c(54,2,11)) %>% spread(key=ID,value=assist_educ_P)
