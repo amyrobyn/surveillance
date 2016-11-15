@@ -70,6 +70,32 @@ districts2plot<-which(colSums(observed(counts_sts))>20)
 plot(dengueFit_basic, type = "fitted", units = districts2plot, hide0s = TRUE)
 
 #multivariate modoel
+
+#other covariates I want to import
+#time and spacy varying
+rain<-as.matrix(counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
+rainlag1<-as.matrix(counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag1))[,-1]
+
+#time varying
+temp<-as.matrix(counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c))[,-1]
+templag1<-as.matrix(counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1))[,-1]
+
+
+#fixed
+services<-as.matrix(counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index))[,-1]
+educ<-as.matrix(counts_numeric2 %>% select(c(54,2,11)) %>% spread(key=ID,value=assist_educ_P))[,-1]
+afro<-as.matrix(counts_numeric2 %>% select(c(54,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop))[,-1]
+area<-as.matrix(counts_numeric2 %>% select(c(54,2,6)) %>% spread(key=ID,value=arean3210))[,-1]
+limit<-as.matrix(counts_numeric2 %>% select(c(54,2,12)) %>% spread(key=ID,value=alguna_limit_p))[,-1]
+pop<-as.matrix(counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop))[,-1]
+literate<-as.matrix(counts_numeric2 %>% select(c(54,2,13)) %>% spread(key=ID,value=literate_p))[,-1]
+empty<-as.matrix(counts_numeric2 %>% select(c(54,2,18)) %>% spread(key=ID,value=home_empty_p))[,-1]
+single<-as.matrix(counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p))[,-1]
+male<-as.matrix(counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p))[,-1]
+unemployed<-as.matrix(counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p))[,-1]
+home<-as.matrix(counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p))[,-1]
+
+
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
 #Sprop<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
 Sprop<-as.matrix(counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
@@ -111,9 +137,6 @@ plot(dengueFit_powerlaw, type = "neweights", plotter = stripplot, panel = functi
 #compare aic for different measure types
 AIC(dengueFit_nepop, dengueFit_powerlaw, dengueFit_np2)
 
-
-
-
 #Random intercepts models
 dengueFit_ri <- update(dengueFit_powerlaw, end = list(f = update(formula(dengueFit_powerlaw)$end, ~. + ri(type = "car") - 1)), ar = list(f = update(formula(dengueFit_powerlaw)$ar, ~. + ri(type = "car")- 1)), ne = list(f = update(formula(dengueFit_powerlaw)$ne, ~. + ri(type = "car") - 1))) 
 
@@ -134,31 +157,3 @@ plot(dengueFit_ri, type = "fitted", units = districts2plot, hide0s = TRUE)
 tp <- c(65, 77)
 models2compare <- paste0("dengueFit_", c("basic", "powerlaw", "ri"))
 denguePreds1 <- lapply(mget(models2compare), oneStepAhead, tp = tp, type = "final")
-
-
-
-
-#other covariates I want to import
-#time and spacy varying
-rain<-as.matrix(counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
-rainlag1<-as.matrix(counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag1))[,-1]
-
-#time varying
-temp<-as.matrix(counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c))[,-1]
-templag1<-as.matrix(counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1))[,-1]
-
-
-#fixed
-services<-as.matrix(counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index))[,-1]
-educ<-as.matrix(counts_numeric2 %>% select(c(54,2,11)) %>% spread(key=ID,value=assist_educ_P))[,-1]
-afro<-as.matrix(counts_numeric2 %>% select(c(54,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop))[,-1]
-area<-as.matrix(counts_numeric2 %>% select(c(54,2,6)) %>% spread(key=ID,value=arean3210))[,-1]
-limit<-as.matrix(counts_numeric2 %>% select(c(54,2,12)) %>% spread(key=ID,value=alguna_limit_p))[,-1]
-pop<-as.matrix(counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop))[,-1]
-literate<-as.matrix(counts_numeric2 %>% select(c(54,2,13)) %>% spread(key=ID,value=literate_p))[,-1]
-empty<-as.matrix(counts_numeric2 %>% select(c(54,2,18)) %>% spread(key=ID,value=home_empty_p))[,-1]
-single<-as.matrix(counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p))[,-1]
-male<-as.matrix(counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p))[,-1]
-unemployed<-as.matrix(counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p))[,-1]
-home<-as.matrix(counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p))[,-1]
-
