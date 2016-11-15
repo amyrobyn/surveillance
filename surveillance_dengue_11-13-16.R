@@ -110,4 +110,3 @@ single<-counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p)
 male<-counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p)
 unemployed<-counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p)
 home<-counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p)
-
