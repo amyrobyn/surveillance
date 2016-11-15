@@ -60,14 +60,14 @@ dev.off()
 
 ##basic models##
 counts_sts_basicmodel<-list(end = list(f=addSeason2formula(~1+t, period = counts_sts@freq)), ar = list(f=~1), ne =list(f=~1, weights = neighbourhood(counts_sts)==1), family = "NegBin1") 
-counts_sts_fit_basic<-hhh4(stsObj= counts_sts, control =counts_sts_basicmodel)
+dengueFit_basic<-hhh4(stsObj= counts_sts, control =counts_sts_basicmodel)
 summary(counts_sts_basicmodel, idx2Exp = TRUE, amplitudeShift = TRUE, maxEV=+TRUE)
 hhh4(stsObj= counts_sts, control = counts_sts_basicmodel)
 plot(counts_sts_fit_basic, type = "season", components = "end", main = "")
-confint(counts_sts_fit_basic, parm = "overdisp")
-AIC(counts_sts_fit_basic, update(counts_sts_fit_basic, family = "Poisson"))
+confint(dengueFit_basic, parm = "overdisp")
+AIC(dengueFit_basic, update(dengueFit_basic, family = "Poisson"))
 districts2plot<-which(colSums(observed(counts_sts))>20)
-plot(counts_sts_fit_basic, type = "fitted", units = districts2plot, hide0s = TRUE)
+plot(dengueFit_basic, type = "fitted", units = districts2plot, hide0s = TRUE)
 
 #multivariate modoel
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
@@ -80,29 +80,62 @@ row.names(SmodelGrid) <- do.call("paste", c(SmodelGrid, list(sep ="|")))
 
 #update the basic model with an offset- here they used teh vaccinated population. For us, we could use incidence as this woudl estimate those susceptible...
 #they try combinations of offset and covariate here
-dengueFits_offset <-apply(X=SmodelGrid, MARGIN = 1, FUN=function(options){ 
+dengueFit_offset <-apply(X=SmodelGrid, MARGIN = 1, FUN=function(options){ 
   updatecomp <-function(comp, option) switch(option, 
   "unchanged" = list(),
   "Soffset"=list(offset = comp$offset * Sprop), 
   "Scovar"=list(f=update(comp$f,~.+log(Sprop))))
-update(counts_sts_fit_basic, 
-       end = updatecomp(counts_sts_fit_basic$control$end, options[1]),
-       ar = updatecomp(counts_sts_fit_basic$control$ar, options[2]),
+update(dengueFit_basic, 
+       end = updatecomp(dengueFit_basic$control$end, options[1]),
+       ar = updatecomp(dengueFit_basic$control$ar, options[2]),
        data = list(Sprop = Sprop))
   })
 #compare the AIC from each optpion for offscet/covariate
 aics<-do.call(AIC, lapply(names(counts_sts_multivariate), as.name), envir = as.environment(counts_sts_multivariate))
-dengueFit_offset<-dengueFits_offset[["Scovar|unchanged"]]
+dengueFit_offset<-dengueFit_offset[["Scovar|unchanged"]]
 coef(dengueFit_offset, se = TRUE)["end.log(Sprop)",]
 
 #add spatial intercation weighted according to population fraction
-dengue_fit_nepop <- update(dengueFit_offset, ne = list(f= ~log(pop)), data=list(pop=population(counts_sts)))
+dengueFit_nepop <- update(dengueFit_offset, ne = list(f= ~log(pop)), data=list(pop=population(counts_sts)))
 #error happens here! 
 #Error in nlminb(start, negll, gradient = negsc, hessian = fi, ..., scale = scale,  : 
 #NA/NaN gradient evaluation
 
-#weighted
-dengue_fit_powerlaw <- update(dengue_fit_nepop, ne = list(weights = W_powerlaw(maxlag = 5)))
+#weighted To account for long-range transmission of cases
+dengueFit_powerlaw <- update(dengueFit_nepop, ne = list(weights = W_powerlaw(maxlag = 5)))
+#another type of weight To account for long-range transmission of cases (a second-order model)
+dengueFit_np2 <- update(dengueFit_nepop, ne = list(weights = W_np(maxlag = 2)))
+#plot different weight types
+library("lattice")
+plot(dengueFit_powerlaw, type = "neweights", plotter = stripplot, panel = function (...) {panel.stripplot(...); panel.average(...)}, jitter.data = TRUE, xlab = expression(o[ji]), ylab = expression(w[ji]))
+#compare aic for different measure types
+AIC(dengueFit_nepop, dengueFit_powerlaw, dengueFit_np2)
+
+
+
+
+#Random intercepts models
+dengueFit_ri <- update(dengueFit_powerlaw, end = list(f = update(formula(dengueFit_powerlaw)$end, ~. + ri(type = "car") - 1)), ar = list(f = update(formula(dengueFit_powerlaw)$ar, ~. + ri(type = "car")- 1)), ne = list(f = update(formula(dengueFit_powerlaw)$ne, ~. + ri(type = "car") - 1))) 
+
+summary(dengueFit_ri, amplitudeShift = TRUE, maxEV = TRUE)
+hhh4(stsObj = object$stsObj, control = control)
+
+#district specific intercepts
+head(ranef(dengueFit_ri, tomatrix = TRUE), n = 3)
+
+
+#map the random intercepts
+for (comp in c("ar", "ne", "end")) {print(plot(dengueFit_ri, type = "ri", component = comp, col.regions = rev(cm.colors(100)), labels = list(cex = 0.6), at = seq(-1.6, 1.6, length.out = 15)))}
+
+plot(dengueFit_ri, type = "fitted", units = districts2plot, hide0s = TRUE)
+
+
+#predictive model assessment
+tp <- c(65, 77)
+models2compare <- paste0("dengueFit_", c("basic", "powerlaw", "ri"))
+denguePreds1 <- lapply(mget(models2compare), oneStepAhead, tp = tp, type = "final")
+
+
 
 
 #other covariates I want to import
