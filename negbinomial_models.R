@@ -1,4 +1,9 @@
-counts_long<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\counts.csv")
+install.packages("glmrob")
+install.packages("foreign")
+install.packages("ggplot2")
+install.packages("MASS")
+
+counts_long<-read.csv("C:\\Users\\amykr\\Google Drive\\Kent\\james\\dissertation\\chkv and dengue\\arcgis analysis\\gwr models\\output\\surveillance\\counts.csv")
 attach(counts_long)	
 ts<- as.ts(counts_long)
 summary(counts_long)
@@ -54,9 +59,6 @@ summary(zinb)
 plot(residuals(zinb) ~ fitted(zinb))
 
 
-install.packages("foreign")
-install.packages("ggplot2")
-install.packages("MASS")
 
  
 # negative binomial distribution regression
