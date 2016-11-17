@@ -17,17 +17,17 @@ class(barrios)
 barrios$ID_BARRIO<- as.numeric(as.character(barrios$ID_BARRIO))
 barrios$barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
 
-counts_numeric<-read.csv("./counts1.csv") %>% filter(codigo_barrio!=2300)
-counts_numeric$idx<-as.Date(counts_numeric$date.1)
+counts_numeric<-read.csv("./dengue.csv") %>% filter(codigo_barrio!=2300)
+counts_numeric$idx<-as.Date(counts_numeric$date)
 jpeg("counts_numeric$dengue.jpg")
 plot(counts_numeric$dengue)
 dev.off()
 
 ident<-data.frame(cbind(ID=0:337,ID_Barrio=barrios$ID_BARRIO))
 counts_numeric2<-inner_join(counts_numeric,ident,by=c("codigo_barrio"="ID_Barrio"))
-counts1<-counts_numeric2 %>% select(c(54,2,4)) %>% spread(key=ID,value=dengue)
+counts1<-counts_numeric2 %>% select(c(57,2,4)) %>% spread(key=ID,value=dengue)
 
-population<-counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop)
+population<-counts_numeric2 %>% select(c(57,2,10)) %>% spread(key=ID,value=total_pop)
 population<-data.matrix(population, rownames.force = NA)
 population<-population/2369829
 #population cali = 2369829 in 2015 http://www.cali.gov.co/publicaciones/poblacion_de_cali_aumenta_anualmente_en_habitantes_pub
@@ -43,20 +43,20 @@ dev.off()
 jpeg("dengue_time_map.jpg")
 plot(denguecounts_sts, type = observed~unit)
 dev.off()
-     #, population=as.Numeric(population[,2:ncol(population)]), labels=list(font=2), colorkey = list(space ="right"), sp.layout=layout.scalebar(counts_numericsts@map, corner = c(0.05, 0.05), scale = 50, labels = c("0", "50 km"), height = 0.03))
- 
+#, population=as.Numeric(population[,2:ncol(population)]), labels=list(font=2), colorkey = list(space ="right"), sp.layout=layout.scalebar(counts_numericsts@map, corner = c(0.05, 0.05), scale = 50, labels = c("0", "50 km"), height = 0.03))
+
 
 jpeg("dengue_units.jpg")
 plot(denguecounts_sts, units = which(colSums(observed(denguecounts_sts))>300))
 dev.off()
 
 ##animation###
-animation::saveHTML(animate(denguecounts_sts, tps=1:19, total.args = list()), img.name="denguedenguecounts_sts", title ="Evolution of dengue outbreak in Cali, Colombia, 2014-2016", ani.width = 500, ani.height = 600)
+#animation::saveHTML(animate(denguecounts_sts, tps=1:19, total.args = list()), img.name="denguedenguecounts_sts", title ="Evolution of dengue outbreak in Cali, Colombia, 2014-2016", ani.width = 500, ani.height = 600)
 
 #format covariates
 #time and spacy varying
-rain<-as.matrix(counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
-rainlag1<-as.matrix(counts_numeric2 %>% select(c(54,2,51)) %>% spread(key=ID,value=rainlag1))[,-1]
+rain<-as.matrix(counts_numeric2 %>% select(c(57,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
+rainlag1<-as.matrix(counts_numeric2 %>% select(c(57,2,51)) %>% spread(key=ID,value=rainlag1))[,-1]
 rain_sts<-sts(epoch=counts1$date_numeric,observed= rain[,2:ncol(rain)],epochAsDate=FALSE, freq =12, start=c(2014, 10), map=barrios)
 jpeg("rain.jpg")
 dev.off()
@@ -64,26 +64,28 @@ stsplot_space(rain_sts)
 #animation::saveHTML(animate(rain_sts, tps=1:19, total.args = list()), title ="Rainfall in Cali, Colombia, 2014-2016", ani.width = 500, ani.height = 600)
 
 #time varying
-temp<-as.matrix(counts_numeric2 %>% select(c(54,2,22)) %>% spread(key=ID,value=temp_anom_median_c))[,-1]
-templag1<-as.matrix(counts_numeric2 %>% select(c(54,2,52)) %>% spread(key=ID,value=templag1))[,-1]
+temp<-as.matrix(counts_numeric2 %>% select(c(57,2,22)) %>% spread(key=ID,value=temp_anom_median_c))[,-1]
+templag1<-as.matrix(counts_numeric2 %>% select(c(57,2,52)) %>% spread(key=ID,value=templag1))[,-1]
 temp_sts<-sts(epoch=counts1$date_numeric,observed= temp[,2:ncol(temp)],epochAsDate=FALSE, freq =12, start=c(2014, 10), map=barrios)
 jpeg("temp.jpg")
 dev.off()
 stsplot_time(temp_sts)
 
 #fixed
-services<-as.matrix(counts_numeric2 %>% select(c(54,2,15)) %>% spread(key=ID,value=services_index))[,-1]
-educ<-as.matrix(counts_numeric2 %>% select(c(54,2,11)) %>% spread(key=ID,value=assist_educ_P))[,-1]
-afro<-as.matrix(counts_numeric2 %>% select(c(54,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop))[,-1]
-area<-as.matrix(counts_numeric2 %>% select(c(54,2,6)) %>% spread(key=ID,value=arean3210))[,-1]
-limit<-as.matrix(counts_numeric2 %>% select(c(54,2,12)) %>% spread(key=ID,value=alguna_limit_p))[,-1]
-pop<-as.matrix(counts_numeric2 %>% select(c(54,2,10)) %>% spread(key=ID,value=total_pop))[,-1]
-literate<-as.matrix(counts_numeric2 %>% select(c(54,2,13)) %>% spread(key=ID,value=literate_p))[,-1]
-empty<-as.matrix(counts_numeric2 %>% select(c(54,2,18)) %>% spread(key=ID,value=home_empty_p))[,-1]
-single<-as.matrix(counts_numeric2 %>% select(c(54,2,29)) %>% spread(key=ID,value=single_p))[,-1]
-male<-as.matrix(counts_numeric2 %>% select(c(54,2,19)) %>% spread(key=ID,value=male_p))[,-1]
-unemployed<-as.matrix(counts_numeric2 %>% select(c(54,2,27)) %>% spread(key=ID,value=unem_p))[,-1]
-home<-as.matrix(counts_numeric2 %>% select(c(54,2,28)) %>% spread(key=ID,value=home_p))[,-1]
+canal<-as.matrix(counts_numeric2 %>% select(c(57,2,53)) %>% spread(key=ID,value=distancetocanalm))[,-1]
+
+services<-as.matrix(counts_numeric2 %>% select(c(57,2,15)) %>% spread(key=ID,value=services_index))[,-1]
+educ<-as.matrix(counts_numeric2 %>% select(c(57,2,11)) %>% spread(key=ID,value=assist_educ_P))[,-1]
+afro<-as.matrix(counts_numeric2 %>% select(c(57,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop))[,-1]
+area<-as.matrix(counts_numeric2 %>% select(c(57,2,6)) %>% spread(key=ID,value=arean3210))[,-1]
+limit<-as.matrix(counts_numeric2 %>% select(c(57,2,12)) %>% spread(key=ID,value=alguna_limit_p))[,-1]
+pop<-as.matrix(counts_numeric2 %>% select(c(57,2,10)) %>% spread(key=ID,value=total_pop))[,-1]
+literate<-as.matrix(counts_numeric2 %>% select(c(57,2,13)) %>% spread(key=ID,value=literate_p))[,-1]
+empty<-as.matrix(counts_numeric2 %>% select(c(57,2,18)) %>% spread(key=ID,value=home_empty_p))[,-1]
+single<-as.matrix(counts_numeric2 %>% select(c(57,2,29)) %>% spread(key=ID,value=single_p))[,-1]
+male<-as.matrix(counts_numeric2 %>% select(c(57,2,19)) %>% spread(key=ID,value=male_p))[,-1]
+unemployed<-as.matrix(counts_numeric2 %>% select(c(57,2,27)) %>% spread(key=ID,value=unem_p))[,-1]
+home<-as.matrix(counts_numeric2 %>% select(c(57,2,28)) %>% spread(key=ID,value=home_p))[,-1]
 
 ##basic models##
 dengue_basicmodel<-list(end = list(f=addSeason2formula(~1+t, period = denguecounts_sts@freq)), ar = list(f=~1), ne =list(f=~1, weights = neighbourhood(denguecounts_sts)==1), family = "NegBin1",  data = list(rain = rain, temp=temp, afro=afro, educ=educ, empty=empty, home=home, limit=limit, literate=literate, male=male, area=area, single=single, unemployed=unemployed) ) 
@@ -114,8 +116,8 @@ dev.off()
 
 #multivariate modoel
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
-#Sprop<-counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain)
-Sprop<-as.matrix(counts_numeric2 %>% select(c(54,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
+#Sprop<-counts_numeric2 %>% select(c(57,2,23)) %>% spread(key=ID,value=Avg_rain)
+Sprop<-as.matrix(counts_numeric2 %>% select(c(57,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
 
 Soptions <- c("unchanged", "Soffset", "Scovar")
 SmodelGrid <- expand.grid(end=Soptions, ar = Soptions)
@@ -125,14 +127,14 @@ row.names(SmodelGrid) <- do.call("paste", c(SmodelGrid, list(sep ="|")))
 #they try combinations of offset and covariate here
 dengueFit_offset <-apply(X=SmodelGrid, MARGIN = 1, FUN=function(options){ 
   updatecomp <-function(comp, option) switch(option, 
-  "unchanged" = list(),
-  "Soffset"=list(offset = comp$offset * home), 
-  "Scovar"=list(f=update(comp$f,~.+ rain + temp + afro + educ + empty + home + limit + literate + male + area  + single + unemployed)))
-update(dengueFit_basic, 
-       end = updatecomp(dengueFit_basic$control$end, options[1]),
-       ar = updatecomp(dengueFit_basic$control$ar, options[2]),
-       data = list(Sprop = Sprop))
-  })
+                                             "unchanged" = list(),
+                                             "Soffset"=list(offset = comp$offset * home), 
+                                             "Scovar"=list(f=update(comp$f,~.+ rain + temp + afro + educ + empty + home + limit + literate + male + area  + single + unemployed)))
+  update(dengueFit_basic, 
+         end = updatecomp(dengueFit_basic$control$end, options[1]),
+         ar = updatecomp(dengueFit_basic$control$ar, options[2]),
+         data = list(Sprop = Sprop))
+})
 #compare the AIC from each optpion for offscet/covariate
 aics<-do.call(AIC, lapply(names(dengueFit_offset), as.name), envir = as.environment(dengueFit_offset))
 dengueFit_offset<-dengueFit_offset[["Scovar|unchanged"]]
