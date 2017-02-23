@@ -3,6 +3,8 @@ setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcg
 #install.packages("animation")
 #install.packages("surveillance")
 #install.packages("gridExtra")
+install.packages("sp")
+library(sp)
 library(xts)
 library(maptools)
 library(surveillance)
@@ -25,7 +27,7 @@ dev.off()
 
 ident<-data.frame(cbind(ID=0:337,ID_Barrio=barrios$ID_BARRIO))
 counts_numeric2<-inner_join(counts_numeric,ident,by=c("codigo_barrio"="ID_Barrio"))
-counts1<-counts_numeric2 %>% select(c(57,2,4)) %>% spread(key=ID,value=dengue)
+counts1<-counts_numeric2 %>% select(c(59,2,4)) %>% spread(key=ID,value=dengue)
 
 population<-counts_numeric2 %>% select(c(57,2,10)) %>% spread(key=ID,value=total_pop)
 population<-data.matrix(population, rownames.force = NA)
@@ -40,10 +42,11 @@ jpeg("dengue_time.jpg")
 plot(denguecounts_sts, type = observed~time)
 dev.off()
 
-jpeg("dengue_time_map.jpg")
-plot(denguecounts_sts, type = observed~unit)
+tiff("dengue_time_map_big.tif", height = 12, width = 17, units = 'cm', compression = "lzw", res = 600)
+plot(denguecounts_sts, type = observed~unit , sub = "Dengue")
 dev.off()
 #, population=as.Numeric(population[,2:ncol(population)]), labels=list(font=2), colorkey = list(space ="right"), sp.layout=layout.scalebar(counts_numericsts@map, corner = c(0.05, 0.05), scale = 50, labels = c("0", "50 km"), height = 0.03))
+
 
 
 jpeg("dengue_units.jpg")
