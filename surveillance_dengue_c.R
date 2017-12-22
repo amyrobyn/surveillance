@@ -1,9 +1,9 @@
-setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/dengue")
+setwd ("C:/Users/amykr/Google Drive/Kent/james/dissertation/chkv and dengue/arcgis analysis/gwr models/output/surveillance/dengue_c")
 
 #install.packages("animation")
-install.packages("surveillance")
+#install.packages("surveillance")
 #install.packages("gridExtra")
-install.packages("sp")
+#install.packages("sp")
 library(sp)
 library(xts)
 library(maptools)
@@ -11,45 +11,52 @@ library(surveillance)
 library(dplyr)
 library(tidyr)
 library(animation)
+library(rgdal)
+library("maptools")
+#install.packages("spdep")
+library("spdep")
 
-
+barrios<-readOGR("barrios.shp")
 crswgs84=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 barrios<-readShapePoly("barrios.shp",proj4string=crswgs84,verbose=TRUE)
 class(barrios)
 barrios$ID_BARRIO<- as.numeric(as.character(barrios$ID_BARRIO))
 barrios$barrios_order <- nbOrder(poly2adjmat(barrios), maxlag=10)
 
-counts_numeric<-read.csv("./dengue.csv") %>% filter(codigo_barrio!=2300)
+counts_numeric<-read.csv("./dengue_c.csv") %>% filter(codigo_barrio!=2300)
 counts_numeric$idx<-as.Date(counts_numeric$date)
-jpeg("counts_numeric$dengue.jpg")
-plot(counts_numeric$dengue)
+
+counts_numeric$denv_c_inc<-counts_numeric$dengue_c/counts_numeric$total_pop
+
+jpeg("counts_numeric$dengue_c.jpg")
+plot(counts_numeric$dengue_c)
 dev.off()
 
 ident<-data.frame(cbind(ID=0:337,ID_Barrio=barrios$ID_BARRIO))
 counts_numeric2<-inner_join(counts_numeric,ident,by=c("codigo_barrio"="ID_Barrio"))
-counts1<-counts_numeric2 %>% select(c(59,2,4)) %>% spread(key=ID,value=dengue)
+counts1<-counts_numeric2 %>% select(c(62,2,4)) %>% spread(key=ID,value=dengue_c)
 
-population<-counts_numeric2 %>% select(c(57,2,10)) %>% spread(key=ID,value=total_pop)
+population<-counts_numeric2 %>% select(c(62,2,11)) %>% spread(key=ID,value=total_pop)
+
 population<-data.matrix(population, rownames.force = NA)
 population<-population/2369829
 #population cali = 2369829 in 2015 http://www.cali.gov.co/publicaciones/poblacion_de_cali_aumenta_anualmente_en_habitantes_pub
 summary(population)
 denguecounts_sts<-sts(epoch=counts1$date_numeric,observed= counts1[,2:ncol(counts1)],epochAsDate=FALSE, freq =12, start=c(2014, 10), map=barrios, neighbourhood = barrios$barrios_order, population=population[,2:ncol(population)])
-
-
 ###basic plots###
 jpeg("dengue_time.jpg")
 plot(denguecounts_sts, type = observed~time)
+save(denguecounts_sts, file ="C:/Users/amykr/Box Sync/Amy Krystosik's Files/cali- epi of arboviruses/epi paper/figures/Figure 4 editable sts objects and code/dengue_c.counts_sts.R")
 dev.off()
 
-tiff("dengue_time_map_big.tif", height = 12, width = 17, units = 'cm', compression = "lzw", res = 600)
-plot(denguecounts_sts, type = observed~unit , sub = "Dengue")
+tiff("c_dengue_time_map_big.tif", height = 12, width = 17, units = 'cm', compression = "lzw", res = 600)
+plot(denguecounts_sts, type = observed~unit , sub = "Confirmed Dengue")
 dev.off()
 #, population=as.Numeric(population[,2:ncol(population)]), labels=list(font=2), colorkey = list(space ="right"), sp.layout=layout.scalebar(counts_numericsts@map, corner = c(0.05, 0.05), scale = 50, labels = c("0", "50 km"), height = 0.03))
 
 
 
-jpeg("dengue_units.jpg")
+jpeg("c_dengue_units.jpg")
 plot(denguecounts_sts, units = which(colSums(observed(denguecounts_sts))>300))
 dev.off()
 
@@ -58,8 +65,8 @@ dev.off()
 
 #format covariates
 #time and spacy varying
-rain<-as.matrix(counts_numeric2 %>% select(c(57,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
-rainlag1<-as.matrix(counts_numeric2 %>% select(c(57,2,51)) %>% spread(key=ID,value=rainlag1))[,-1]
+rain<-as.matrix(counts_numeric2 %>% select(c(62,2,24)) %>% spread(key=ID,value=Avg_rain))[,-1]
+rainlag1<-as.matrix(counts_numeric2 %>% select(c(62,2,52)) %>% spread(key=ID,value=rainlag1))[,-1]
 rain_sts<-sts(epoch=counts1$date_numeric,observed= rain[,2:ncol(rain)],epochAsDate=FALSE, freq =12, start=c(2014, 10), map=barrios)
 jpeg("rain.jpg")
 dev.off()
@@ -67,28 +74,28 @@ stsplot_space(rain_sts)
 #animation::saveHTML(animate(rain_sts, tps=1:19, total.args = list()), title ="Rainfall in Cali, Colombia, 2014-2016", ani.width = 500, ani.height = 600)
 
 #time varying
-temp<-as.matrix(counts_numeric2 %>% select(c(57,2,22)) %>% spread(key=ID,value=temp_anom_median_c))[,-1]
-templag1<-as.matrix(counts_numeric2 %>% select(c(57,2,52)) %>% spread(key=ID,value=templag1))[,-1]
+temp<-as.matrix(counts_numeric2 %>% select(c(62,2,23)) %>% spread(key=ID,value=temp_anom_median_c))[,-1]
+templag1<-as.matrix(counts_numeric2 %>% select(c(62,2,53)) %>% spread(key=ID,value=templag1))[,-1]
 temp_sts<-sts(epoch=counts1$date_numeric,observed= temp[,2:ncol(temp)],epochAsDate=FALSE, freq =12, start=c(2014, 10), map=barrios)
 jpeg("temp.jpg")
 dev.off()
 stsplot_time(temp_sts)
 
 #fixed
-canal<-as.matrix(counts_numeric2 %>% select(c(57,2,53)) %>% spread(key=ID,value=distancetocanalm))[,-1]
+canal<-as.matrix(counts_numeric2 %>% select(c(62,2,59)) %>% spread(key=ID,value=distancetocanalm))[,-1]
 
-services<-as.matrix(counts_numeric2 %>% select(c(57,2,15)) %>% spread(key=ID,value=services_index))[,-1]
-educ<-as.matrix(counts_numeric2 %>% select(c(57,2,11)) %>% spread(key=ID,value=assist_educ_P))[,-1]
-afro<-as.matrix(counts_numeric2 %>% select(c(57,2,26)) %>% spread(key=ID,value=negro__a___mulato__afrop))[,-1]
-area<-as.matrix(counts_numeric2 %>% select(c(57,2,6)) %>% spread(key=ID,value=arean3210))[,-1]
-limit<-as.matrix(counts_numeric2 %>% select(c(57,2,12)) %>% spread(key=ID,value=alguna_limit_p))[,-1]
-pop<-as.matrix(counts_numeric2 %>% select(c(57,2,10)) %>% spread(key=ID,value=total_pop))[,-1]
-literate<-as.matrix(counts_numeric2 %>% select(c(57,2,13)) %>% spread(key=ID,value=literate_p))[,-1]
-empty<-as.matrix(counts_numeric2 %>% select(c(57,2,18)) %>% spread(key=ID,value=home_empty_p))[,-1]
-single<-as.matrix(counts_numeric2 %>% select(c(57,2,29)) %>% spread(key=ID,value=single_p))[,-1]
-male<-as.matrix(counts_numeric2 %>% select(c(57,2,19)) %>% spread(key=ID,value=male_p))[,-1]
-unemployed<-as.matrix(counts_numeric2 %>% select(c(57,2,27)) %>% spread(key=ID,value=unem_p))[,-1]
-home<-as.matrix(counts_numeric2 %>% select(c(57,2,28)) %>% spread(key=ID,value=home_p))[,-1]
+services<-as.matrix(counts_numeric2 %>% select(c(62,2,16)) %>% spread(key=ID,value=services_index))[,-1]
+educ<-as.matrix(counts_numeric2 %>% select(c(62,2,12)) %>% spread(key=ID,value=assist_educ_P))[,-1]
+afro<-as.matrix(counts_numeric2 %>% select(c(62,2,27)) %>% spread(key=ID,value=negro__a___mulato__afrop))[,-1]
+area<-as.matrix(counts_numeric2 %>% select(c(62,2,6)) %>% spread(key=ID,value=arean3210))[,-1]
+limit<-as.matrix(counts_numeric2 %>% select(c(62,2,13)) %>% spread(key=ID,value=alguna_limit_p))[,-1]
+pop<-as.matrix(counts_numeric2 %>% select(c(62,2,11)) %>% spread(key=ID,value=total_pop))[,-1]
+literate<-as.matrix(counts_numeric2 %>% select(c(62,2,14)) %>% spread(key=ID,value=literate_p))[,-1]
+empty<-as.matrix(counts_numeric2 %>% select(c(62,2,19)) %>% spread(key=ID,value=home_empty_p))[,-1]
+single<-as.matrix(counts_numeric2 %>% select(c(62,2,30)) %>% spread(key=ID,value=single_p))[,-1]
+male<-as.matrix(counts_numeric2 %>% select(c(62,2,20)) %>% spread(key=ID,value=male_p))[,-1]
+unemployed<-as.matrix(counts_numeric2 %>% select(c(62,2,28)) %>% spread(key=ID,value=unem_p))[,-1]
+home<-as.matrix(counts_numeric2 %>% select(c(62,2,29)) %>% spread(key=ID,value=home_p))[,-1]
 
 ##basic models##
 dengue_basicmodel<-list(end = list(f=addSeason2formula(~1+t, period = denguecounts_sts@freq)), ar = list(f=~1), ne =list(f=~1, weights = neighbourhood(denguecounts_sts)==1), family = "NegBin1",  data = list(rain = rain, temp=temp, afro=afro, educ=educ, empty=empty, home=home, limit=limit, literate=literate, male=male, area=area, single=single, unemployed=unemployed) ) 
@@ -120,7 +127,7 @@ dev.off()
 #multivariate modoel
 #e.g: Sprop <-matrix(1~measlesWeserE<S@map@data$vacc1.2004), nrow = nrow(measlesWeserEMS), ncol(measlesWeserEMS), byrow=TRUE)
 #Sprop<-counts_numeric2 %>% select(c(57,2,23)) %>% spread(key=ID,value=Avg_rain)
-Sprop<-as.matrix(counts_numeric2 %>% select(c(57,2,23)) %>% spread(key=ID,value=Avg_rain))[,-1]
+Sprop<-as.matrix(counts_numeric2 %>% select(c(62,2,24)) %>% spread(key=ID,value=Avg_rain))[,-1]
 
 Soptions <- c("unchanged", "Soffset", "Scovar")
 SmodelGrid <- expand.grid(end=Soptions, ar = Soptions)
